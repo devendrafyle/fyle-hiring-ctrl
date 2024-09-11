@@ -10,7 +10,7 @@ const { uploadExcelFile } = require('./controllers/excelController');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 8800;
 
 // Enable CORS
 app.use(cors());
@@ -26,13 +26,17 @@ mongoose.connect(process.env.MONGODB_URI, {
 app.use(fileUpload());
 
 // Route for syncing Google Sheets data
-app.get('/sync-google-sheet', (req, res) => {
-    syncGoogleSheetToDB();
-    res.send('Google Sheets data synced.');
-});
+// app.get('/sync-google-sheet', (req, res) => {
+//     syncGoogleSheetToDB();
+//     res.send('Google Sheets data synced.');
+// });
 
 // Route for uploading and processing Excel file
 app.post('/upload-excel', uploadExcelFile);
+
+app.get('/', (req,res)=>{
+    res.send('API is working fine');
+});
 
 // Start server
 app.listen(PORT, () => {
