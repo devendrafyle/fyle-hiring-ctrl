@@ -34,6 +34,8 @@ app.use(fileUpload());
 // Route for uploading and processing Excel file
 app.post('/upload-excel', uploadExcelFile);
 
+app.post('/job-post', createJobPost);
+
 app.get('/', (req,res)=>{
     res.send('API is working fine');
 });
