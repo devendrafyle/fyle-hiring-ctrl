@@ -10,12 +10,11 @@ const uploadExcelFile = async (req, res) => {
         }
 
         const jobId = req.body.jobId;
-        const excelFile = req.files.file; // 'file' is the name of the form field
+        const excelFile = req.files.file;
         const workbook = XLSX.read(excelFile.data, { type: 'buffer' });
-        const sheetName = workbook.SheetNames[0]; // Get the first sheet
+        const sheetName = workbook.SheetNames[0];
         const sheet = workbook.Sheets[sheetName];
         const rows = XLSX.utils.sheet_to_json(sheet); 
-        console.log("checking rows", rows, jobId);
 
         for (const row of rows) {
             const submissionId = uuidv4(); // Generate unique submission_id
@@ -36,12 +35,14 @@ const uploadExcelFile = async (req, res) => {
                     best_practices: { score: null, reason: null },
                     edge_cases: { score: null, reason: null }
                 },
-                resume_review_overall_score: null,
-                resume_review_overall_summary: null,
-                resume_review_parameters_summary: {
-                    skill_match: { rating: null, reason: null },
-                    work_experience_or_projects: { rating: null, reason: null },
-                    project_quality: { rating: null, reason: null }
+                resume_review: {   
+                    resume_review_overall_score: null,
+                    resume_review_overall_summary: null,
+                    resume_review_parameters_summary: {
+                        skill_match: { rating: null, reason: null },
+                        work_experience_or_projects: { rating: null, reason: null },
+                        project_quality: { rating: null, reason: null }
+                    }
                 },
                 code_coverge_score: null,
                 code_coverage_description: null,
@@ -53,14 +54,12 @@ const uploadExcelFile = async (req, res) => {
             let existingCandidate = await Candidate.findOne({ email: row['Email'] });
 
             if (existingCandidate) {
-                // If the candidate already exists, append the submission
-                candidateId = existingCandidate.candidate_id; // Use existing candidate ID
+                candidateId = existingCandidate.candidate_id;
                 existingCandidate.submission.push(newSubmission);
-                existingCandidate.current_status = "task_submitted"; // Update status if needed
+                existingCandidate.current_status = "task_submitted";
                 await existingCandidate.save();
                 console.log(`Updated candidate ${existingCandidate.full_name} with new submission.`);
             } else {
-                // Generate new candidate_id if the candidate does not exist
                 candidateId = uuidv4(); // Generate unique candidate_id
                 const newCandidate = new Candidate({
                     candidate_id: candidateId,

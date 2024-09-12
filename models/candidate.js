@@ -34,7 +34,7 @@ const submissionSchema = new Schema({
             rating: Number,
             reason: String
         },
-        work_experience_or_projects: {
+        work_experience: {
             rating: Number,
             reason: String
         },
@@ -43,7 +43,7 @@ const submissionSchema = new Schema({
             reason: String
         }
     },
-    code_coverge_score: Number,
+    code_coverage_score: Number,
     code_coverage_description: String,
     Review: Array,
     last_updated: { type: Date, default: Date.now }

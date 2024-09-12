@@ -3,9 +3,9 @@ const fileUpload = require('express-fileupload');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const { createJobPost, getAllJobPosts, updateJobStatus } = require('./controllers/jobPostController');
+const { createJobPost, getAllJobPosts, updateJob } = require('./controllers/jobPostController');
 const {uploadExcelFile} = require('./controllers/excelController');
-const { getCandidates } = require('./controllers/candidateController');
+const { getCandidates, getCandidateStats } = require('./controllers/candidateController');
 
 // Load environment variables
 dotenv.config();
@@ -28,14 +28,16 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Middleware for file uploads
 app.use(fileUpload());
 
-// app.get('/sync-google-sheet', (req, res) => {
-//     syncGoogleSheetToDB();
-//     res.send('Google Sheets data synced.');
-//   });
+app.get('/sync-google-sheet', (req, res) => {
+    syncGoogleSheetToDB();
+    res.send('Google Sheets data synced.');
+  });
   
   // Route for uploading and processing Excel file
 
 app.get('/candidates', getCandidates);
+
+app.get('/candidate-stats', getCandidateStats);
 
 app.post('/upload-excel', uploadExcelFile);
 
@@ -45,7 +47,7 @@ app.post('/job-post', createJobPost);
 // Route for fetching all job posts
 app.get('/job-posts', getAllJobPosts);
 
-app.put('/job-post/:jobId/status', updateJobStatus);
+app.put('/job-post/:jobId/status', updateJob);
 
 // Start server
 app.listen(PORT, () => {

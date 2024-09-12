@@ -1,15 +1,16 @@
 const mongoose = require('mongoose');
 
 const jobPostSchema = new mongoose.Schema({
-  jobId: { type: String, required: true },
-  jobTitle: { type: String, required: true },
-  jobDomain: { type: String, required: true },
-  jobDesc: { type: String, required: true },
-  codeCoverage: { type: Number, required: true },
-  codeReviewScore: { type: Number, required: true },
-  resumeScore: { type: Number, required: true },
+  job_id: { type: String, required: true },
+  job_title: { type: String, required: true },
+  job_domain: { type: String, required: true },
+  job_desc: { type: String, required: true },
+  code_coverage: { type: Number, required: true },
+  code_review_score: { type: Number, required: true },
+  resume_score: { type: Number, required: true },
+  github_url: {type: String, required: true},
   is_active: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
+  created_at: { type: Date, default: Date.now }
 });
 
 const JobPost = mongoose.model('JobPost', jobPostSchema);
