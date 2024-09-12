@@ -3,8 +3,7 @@ const fileUpload = require('express-fileupload');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const { syncGoogleSheetToDB } = require('./controllers/googleSheetController');
-const { uploadExcelFile } = require('./controllers/excelController');
+const { createJobPost, getAllJobPosts } = require('./controllers/jobPostController');
 
 // Load environment variables
 dotenv.config();
@@ -14,6 +13,8 @@ const PORT = process.env.PORT || 8800;
 
 // Enable CORS
 app.use(cors());
+
+app.use(express.json());
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGODB_URI, {
@@ -25,22 +26,13 @@ mongoose.connect(process.env.MONGODB_URI, {
 // Middleware for file uploads
 app.use(fileUpload());
 
-// Route for syncing Google Sheets data
-// app.get('/sync-google-sheet', (req, res) => {
-//     syncGoogleSheetToDB();
-//     res.send('Google Sheets data synced.');
-// });
-
-// Route for uploading and processing Excel file
-app.post('/upload-excel', uploadExcelFile);
-
+// Route for creating a new job post
 app.post('/job-post', createJobPost);
 
-app.get('/', (req,res)=>{
-    res.send('API is working fine');
-});
+// Route for fetching all job posts
+app.get('/job-posts', getAllJobPosts);
 
 // Start server
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+  console.log(`Server running on port ${PORT}`);
 });
