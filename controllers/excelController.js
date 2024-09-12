@@ -1,5 +1,6 @@
 const XLSX = require('xlsx');
 const Candidate = require('../models/candidate');
+const { v4: uuidv4 } = require('uuid'); // Import UUID function
 
 const uploadExcelFile = async (req, res) => {
     try {
@@ -8,23 +9,26 @@ const uploadExcelFile = async (req, res) => {
             return res.status(400).send('No file was uploaded.');
         }
 
+        const jobId = req.body.jobId;
         const excelFile = req.files.file; // 'file' is the name of the form field
         const workbook = XLSX.read(excelFile.data, { type: 'buffer' });
         const sheetName = workbook.SheetNames[0]; // Get the first sheet
         const sheet = workbook.Sheets[sheetName];
-        const rows = XLSX.utils.sheet_to_json(sheet); // Convert sheet to JSON
+        const rows = XLSX.utils.sheet_to_json(sheet); 
+        console.log("checking rows", rows, jobId);
 
         for (const row of rows) {
+            const submissionId = uuidv4(); // Generate unique submission_id
+
             const newSubmission = {
-                submission_id: row.SubmissionID,
-                job_id: row.JobID,
-                position: row.Position,
-                submitted_timestamp: row.SubmittedTimestamp,
+                submission_id: submissionId,
+                job_id: jobId,
+                submitted_timestamp: row['Time Stamp'],
                 status: "task_submitted",
-                repo_link: row.RepoLink,
-                time_taken: row.TimeTaken,
-                video_link: row.VideoLink,
-                resume_link: row.ResumeLink,
+                repo_link: row['Github Repository Link'],
+                time_taken: row['How much time did you take to complete the task?'],
+                video_link: row[ 'Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?'],
+                resume_link: row['Resume'],
                 code_review_overall_score: null,
                 code_review_overall_summary: null,
                 code_review_parameters_summary: {
@@ -45,27 +49,31 @@ const uploadExcelFile = async (req, res) => {
                 last_updated: new Date()
             };
 
-            const existingCandidate = await Candidate.findOne({ candidate_id: row.CandidateID });
+            let candidateId;
+            let existingCandidate = await Candidate.findOne({ email: row['Email'] });
 
             if (existingCandidate) {
-                // If candidate exists, add the new submission to their submission array
+                // If the candidate already exists, append the submission
+                candidateId = existingCandidate.candidate_id; // Use existing candidate ID
                 existingCandidate.submission.push(newSubmission);
-                existingCandidate.current_status = "AI_REVIEWED"; // Update status if needed
+                existingCandidate.current_status = "task_submitted"; // Update status if needed
                 await existingCandidate.save();
                 console.log(`Updated candidate ${existingCandidate.full_name} with new submission.`);
             } else {
-                // Create new candidate if not found
+                // Generate new candidate_id if the candidate does not exist
+                candidateId = uuidv4(); // Generate unique candidate_id
                 const newCandidate = new Candidate({
-                    candidate_id: row.CandidateID,
-                    email: row.Email,
-                    mobile_number: row.MobileNumber,
-                    full_name: row.FullName,
-                    college_name: row.CollegeName,
-                    year_of_passing: row.YearOfPassing,
-                    current_status: "AI_REVIEWED",
+                    candidate_id: candidateId,
+                    email: row['Email'],
+                    mobile_number: row['Contact Number'],
+                    full_name: row['Full Name'], // Corrected full_name field
+                    college_name: row['College Name'],
+                    year_of_passing: row['Year of Passing'],
+                    current_status: "task_submitted",
                     current_hiring_eligibility: true,
-                    submission: [newSubmission] // Add new submission to submission array
+                    submission: [newSubmission]
                 });
+
                 await newCandidate.save();
                 console.log(`Candidate ${newCandidate.full_name} added to DB.`);
             }

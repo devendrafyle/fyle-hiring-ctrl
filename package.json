@@ -17,6 +17,7 @@
     "express-fileupload": "^1.5.1",
     "google-spreadsheet": "^4.1.4",
     "mongoose": "^8.6.2",
+    "uuid": "^10.0.0",
     "xlsx": "^0.18.5"
   },
   "devDependencies": {
