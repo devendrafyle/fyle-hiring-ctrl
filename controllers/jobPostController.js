@@ -3,7 +3,7 @@ const { v4: uuidv4 } = require('uuid');
 // Function to create a new job post
 const createJobPost = async (req, res) => {
   try {
-    const { job_title, job_domain, job_desc, code_coverage, code_review_score, resume_score, is_active } = req.body;
+    const { job_title, job_domain, job_desc, code_coverage, code_review_score, resume_score, is_active, github_url } = req.body;
 
     // Create a new job post with a generated jobId and is_active field
     const newJobPost = new JobPost({
@@ -14,6 +14,7 @@ const createJobPost = async (req, res) => {
       code_coverage,
       code_review_score,
       resume_score,
+      github_url,
       is_active: is_active !== undefined ? is_active : true
     });
 
