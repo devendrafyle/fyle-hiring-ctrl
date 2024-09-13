@@ -166,4 +166,49 @@ const getCandidateStats = async (req, res) => {
     }
 };
 
-module.exports = { getCandidates, getCandidateStats };
+const updateCandidate = async (req, res) => {
+    try {
+      const candidateId = req.params.candidateId;
+      const updateData = req.body;
+  
+      const candidate = await Candidate.findOne({ candidate_id: candidateId });
+  
+      if (!candidate) {
+        return res.status(404).json({ message: 'Candidate not found' });
+      }
+  
+      const lastIndex = candidate.submission.length - 1;
+  
+      // Build the update object
+      const updateFields = {};
+  
+      for (let key in updateData) {
+        if (key === 'submission') {
+          // Assume updateData.submission contains fields to update in the last submission
+          for (let subKey in updateData.submission) {
+            updateFields[`submission.${lastIndex}.${subKey}`] = updateData.submission[subKey];
+          }
+        } else {
+          updateFields[key] = updateData[key];
+        }
+      }
+  
+      // Perform the update
+      const updatedCandidate = await Candidate.findOneAndUpdate(
+        { candidate_id: candidateId },
+        { $set: updateFields },
+        { new: true, runValidators: true }
+      );
+  
+      res.status(200).json({
+        message: 'Candidate updated successfully',
+        data: updatedCandidate,
+      });
+    } catch (error) {
+      console.error('Error updating candidate:', error);
+      res.status(500).json({ error: 'An error occurred while updating the candidate.' });
+    }
+  };
+  
+
+module.exports = { getCandidates, getCandidateStats, updateCandidate };

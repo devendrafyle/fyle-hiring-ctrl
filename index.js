@@ -5,7 +5,7 @@ const dotenv = require('dotenv');
 const cors = require('cors');
 const { createJobPost, getAllJobPosts, updateJob } = require('./controllers/jobPostController');
 const {uploadExcelFile} = require('./controllers/excelController');
-const { getCandidates, getCandidateStats } = require('./controllers/candidateController');
+const { getCandidates, getCandidateStats, updateCandidate } = require('./controllers/candidateController');
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +36,9 @@ app.get('/sync-google-sheet', (req, res) => {
   // Route for uploading and processing Excel file
 
 app.get('/candidates', getCandidates);
+
+app.put('/candidates/:candidateId', updateCandidate);
+
 
 app.get('/candidate-stats', getCandidateStats);
 
