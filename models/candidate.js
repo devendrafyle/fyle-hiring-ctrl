@@ -57,7 +57,9 @@ const candidateSchema = new Schema({
     college_name: String,
     year_of_passing: String,
     current_status: String,
+    current_job_id: String,
     current_hiring_eligibility: Boolean,
+    reapplied_time_gap: String,
     submission: [submissionSchema]
 });
 

@@ -47,7 +47,7 @@ app.post('/job-post', createJobPost);
 // Route for fetching all job posts
 app.get('/job-posts', getAllJobPosts);
 
-app.put('/job-post/:jobId/status', updateJob);
+app.put('/job-post/:jobId', updateJob);
 
 // Start server
 app.listen(PORT, () => {

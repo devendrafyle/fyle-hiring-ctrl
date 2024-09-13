@@ -32,7 +32,7 @@ const updateJob = async (req, res) => {
     const updates = req.body; // Get the updates from the request body
 
     // Find and update the job post with the provided updates
-    const updatedJobPost = await JobPost.findOneAndUpdate({ jobId }, updates, { new: true });
+    const updatedJobPost = await JobPost.findOneAndUpdate({ job_id: jobId }, updates, { new: true });
 
     if (!updatedJobPost) {
       return res.status(404).json({ message: 'Job post not found' });

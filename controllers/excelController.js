@@ -19,6 +19,7 @@ const uploadExcelFile = async (req, res) => {
         for (const row of rows) {
             const submissionId = uuidv4(); // Generate unique submission_id
 
+            // Create the new submission object
             const newSubmission = {
                 submission_id: submissionId,
                 job_id: jobId,
@@ -26,7 +27,7 @@ const uploadExcelFile = async (req, res) => {
                 status: "task_submitted",
                 repo_link: row['Github Repository Link'],
                 time_taken: row['How much time did you take to complete the task?'],
-                video_link: row[ 'Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?'],
+                video_link: row['Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?'],
                 resume_link: row['Resume'],
                 code_review_overall_score: null,
                 code_review_overall_summary: null,
@@ -35,7 +36,7 @@ const uploadExcelFile = async (req, res) => {
                     best_practices: { score: null, reason: null },
                     edge_cases: { score: null, reason: null }
                 },
-                resume_review: {   
+                resume_review: {
                     resume_review_overall_score: null,
                     resume_review_overall_summary: null,
                     resume_review_parameters_summary: {
@@ -50,26 +51,53 @@ const uploadExcelFile = async (req, res) => {
                 last_updated: new Date()
             };
 
+            // Find existing candidate by email
             let candidateId;
             let existingCandidate = await Candidate.findOne({ email: row['Email'] });
 
             if (existingCandidate) {
+                // Candidate exists - append submission
                 candidateId = existingCandidate.candidate_id;
+
+                // Check the last submission's timestamp for "reapplied_status"
+                const lastSubmission = existingCandidate.submission[existingCandidate.submission.length - 1];
+                let reappliedTimeGap = null;
+                if (lastSubmission) {
+                    const lastTimestamp = new Date(lastSubmission.submitted_timestamp);
+                    const currentTimestamp = new Date(newSubmission.submitted_timestamp);
+                    const timeDifference = (currentTimestamp - lastTimestamp) / (1000 * 60 * 60 * 24); // Difference in days
+                    reappliedTimeGap = timeDifference;
+                }
+
+                // Check if all required URLs are present to determine hiring eligibility
+                const currentHiringEligibility = !!(row['Github Repository Link'] && row['Resume'] && row['Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?']);
+
                 existingCandidate.submission.push(newSubmission);
                 existingCandidate.current_status = "task_submitted";
+                existingCandidate.current_job_id = jobId;
+                existingCandidate.reapplied_time_gap = reappliedTimeGap;
+                existingCandidate.current_hiring_eligibility = currentHiringEligibility;
+
                 await existingCandidate.save();
                 console.log(`Updated candidate ${existingCandidate.full_name} with new submission.`);
             } else {
+                // New candidate
                 candidateId = uuidv4(); // Generate unique candidate_id
+
+                // Check if all required URLs are present for a new candidate
+                const currentHiringEligibility = !!(row['Github Repository Link'] && row['Resume'] && row['Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?']);
+
                 const newCandidate = new Candidate({
                     candidate_id: candidateId,
                     email: row['Email'],
                     mobile_number: row['Contact Number'],
-                    full_name: row['Full Name'], // Corrected full_name field
+                    full_name: row['Full Name'],
                     college_name: row['College Name'],
                     year_of_passing: row['Year of Passing'],
                     current_status: "task_submitted",
-                    current_hiring_eligibility: true,
+                    reapplied_time_gap: null,  // No reapplied status for new candidates
+                    current_hiring_eligibility: currentHiringEligibility,
+                    current_job_id: jobId,
                     submission: [newSubmission]
                 });
 
