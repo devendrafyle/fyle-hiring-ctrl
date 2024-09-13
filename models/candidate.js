@@ -1,66 +1,70 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
+// Define the schema for resume review parameters
+const resumeReviewParametersSchema = new Schema({
+  skill_match: {
+    rating: { type: Number },
+    reason: { type: String }
+  },
+  work_experience: {
+    rating: { type: Number },
+    reason: { type: String }
+  },
+  project_quality: {
+    rating: { type: Number },
+    reason: { type: String }
+  }
+});
+
+// Define the schema for resume review
+const resumeReviewSchema = new Schema({
+  resume_review_parameters_summary: resumeReviewParametersSchema,
+  resume_review_overall_score: { type: Number },
+  resume_review_overall_summary: { type: String }
+});
+
+// Define the schema for code review parameters
+const codeReviewSchema = new Schema({
+  implementation_closeness: { type: Number },
+  code_cleanliness: { type: Number },
+  best_practices: { type: Number },
+  edge_cases: { type: Number },
+  overall_score: { type: Number },
+  summary: { type: String }
+});
+
+// Define the schema for a submission
 const submissionSchema = new Schema({
-    submission_id: String,
-    job_id: String,
-    position: String,
-    submitted_timestamp: String,
-    status: String,
-    repo_link: String,
-    time_taken: String,
-    video_link: String,
-    resume_link: String,
-    code_review_overall_score: Number,
-    code_review_overall_summary: String,
-    code_review_parameters_summary: {
-        code_cleanliness: {
-            score: Number,
-            reason: String
-        },
-        best_practices: {
-            score: Number,
-            reason: String
-        },
-        edge_cases: {
-            score: Number,
-            reason: String
-        }
-    },
-    resume_review_overall_score: Number,
-    resume_review_overall_summary: String,
-    resume_review_parameters_summary: {
-        skill_match: {
-            rating: Number,
-            reason: String
-        },
-        work_experience: {
-            rating: Number,
-            reason: String
-        },
-        project_quality: {
-            rating: Number,
-            reason: String
-        }
-    },
-    code_coverage_score: Number,
-    code_coverage_description: String,
-    Review: Array,
-    last_updated: { type: Date, default: Date.now }
+  submission_id: { type: String },
+  job_id: { type: String },
+  position: { type: String },
+  submitted_timestamp: { type: String },
+  status: { type: String },
+  repo_link: { type: String },
+  time_taken: { type: String },
+  video_link: { type: String },
+  resume_link: { type: String },
+  resume_review: resumeReviewSchema,
+  code_review: codeReviewSchema,
+  code_coverage_score: { type: Number },
+  code_coverage_description: { type: String },
+  Review: { type: Array },
+  last_updated: { type: Date, default: Date.now }
 });
 
 const candidateSchema = new Schema({
-    candidate_id: String,
-    email: String,
-    mobile_number: String,
-    full_name: String,
-    college_name: String,
-    year_of_passing: String,
-    current_status: String,
-    current_job_id: String,
-    current_hiring_eligibility: Boolean,
-    reapplied_time_gap: String,
-    submission: [submissionSchema]
+  candidate_id: { type: String },
+  email: { type: String },
+  mobile_number: { type: String },
+  full_name: { type: String },
+  college_name: { type: String },
+  year_of_passing: { type: String },
+  current_status: { type: String },
+  current_job_id: { type: String },
+  current_hiring_eligibility: { type: Boolean },
+  reapplied_time_gap: { type: String },
+  submission: [submissionSchema]
 });
 
 const Candidate = mongoose.model('Candidate', candidateSchema);

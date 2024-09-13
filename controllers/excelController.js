@@ -29,24 +29,6 @@ const uploadExcelFile = async (req, res) => {
                 time_taken: row['How much time did you take to complete the task?'],
                 video_link: row['Please record a video introducing yourself. We also want to hear your thoughts on your recently completed assignment. Keep the video under 2 minutes. Mention the following points in the video:\n1. Introduce yourself. You can include:\n      a. Personal details like name, education, hobbies, etc.      \n      b. Will you be available for a full-time internship for 6 months?\n2. What was the most challenging part of the assignment?\n3. If you were to change anything about the assignment, what would it be?'],
                 resume_link: row['Resume'],
-                code_review_overall_score: null,
-                code_review_overall_summary: null,
-                code_review_parameters_summary: {
-                    code_cleanliness: { score: null, reason: null },
-                    best_practices: { score: null, reason: null },
-                    edge_cases: { score: null, reason: null }
-                },
-                resume_review: {
-                    resume_review_overall_score: null,
-                    resume_review_overall_summary: null,
-                    resume_review_parameters_summary: {
-                        skill_match: { rating: null, reason: null },
-                        work_experience_or_projects: { rating: null, reason: null },
-                        project_quality: { rating: null, reason: null }
-                    }
-                },
-                code_coverge_score: null,
-                code_coverage_description: null,
                 Review: [],
                 last_updated: new Date()
             };
