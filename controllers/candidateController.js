@@ -25,7 +25,7 @@ const getCandidates = async (req, res) => {
         delete query.sortOrder;
         delete query.search;
 
-        // Build the search query using $or to match by full_name, email, or college_name
+        // Build the search query using $or to match by full_name, email, college_name, or mobile_number
         const searchQuery = search
             ? {
                   $or: [
@@ -40,15 +40,38 @@ const getCandidates = async (req, res) => {
         // Combine the search query with other query filters (if any)
         const finalQuery = { ...query, ...searchQuery };
 
-        // Build the sorting object for MongoDB's .sort() method
-        const sort = {};
-        sort[sortField] = sortOrder;
+        // Build the sorting object for MongoDB's aggregation pipeline
+        let sort = {};
+        
+        if (sortField === 'resume_review_overall_score') {
+            sort = { 'last_submission.resume_review.resume_review_overall_score': sortOrder };
+        } else if (sortField === 'code_review_overall_score') {
+            sort = { 'last_submission.code_review.overall_score': sortOrder };
+        } else if (sortField === 'code_coverage_score'){
+            sort = { 'last_submission.code_coverage_score': sortOrder };
+        } else {
+            sort[sortField] = sortOrder;
+        }
 
-        // Find candidates based on the final query object with pagination and sorting
-        const candidates = await Candidate.find(finalQuery)
-            .skip(offset)    // Skip the first 'offset' results
-            .limit(limit)    // Limit the number of results to 'limit'
-            .sort(sort);     // Apply sorting based on sortField and sortOrder
+        // Use MongoDB aggregation to handle sorting based on the last submission's resume_review_overall_score
+        const candidatesAggregation = await Candidate.aggregate([
+            // Match the candidates based on the final query
+            { $match: finalQuery },
+            
+            // Project the last element of the submission array
+            {
+                $addFields: {
+                    last_submission: { $arrayElemAt: ['$submission', -1] }  // Get the last submission
+                }
+            },
+
+            // Sort based on the specified field (resume_review_overall_score if applicable)
+            { $sort: sort },
+
+            // Implement pagination
+            { $skip: offset },
+            { $limit: limit }
+        ]);
 
         // Count the total number of matching candidates for pagination purposes
         const totalCandidates = await Candidate.countDocuments(finalQuery);
@@ -56,8 +79,8 @@ const getCandidates = async (req, res) => {
         // Return the result
         res.status(200).json({
             total: totalCandidates,  // Total matching candidates (ignoring pagination)
-            count: candidates.length, // Number of candidates returned in this batch
-            data: candidates          // The candidates data
+            count: candidatesAggregation.length, // Number of candidates returned in this batch
+            data: candidatesAggregation          // The candidates data with latest submission
         });
     } catch (error) {
         console.error('Error fetching candidates:', error);
